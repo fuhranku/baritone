@@ -139,6 +139,10 @@ module.exports.shuffle = function(shuffle) {
   exec('osascript -e \'tell application "Spotify" to set shuffling to ' + shuffle + '\'');
 };
 
+module.exports.launch = function() {
+  exec('osascript -e \'launch application "Spotify" \'');
+}
+
 module.exports.getAlbumCover = function(id) {
   mod = this;
   config = copyConfig();
@@ -208,6 +212,9 @@ module.exports.init = function() {
       });
       console.log('waiting for spotify...');
       config.port++;
+      if(typeof mainWindow !== 'undefined') {
+        mainWindow.webContents.send('running', false);
+      }
     }
   }, 500);
 }

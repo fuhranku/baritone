@@ -113,3 +113,7 @@ ipcMain.on('shuffle', function(event, data) {
 ipcMain.on('repeat', function(event, data) {
   spotify.repeat(data);
 });
+
+ipcMain.on('launch', function(event, data) {
+  spotify.launch();
+});

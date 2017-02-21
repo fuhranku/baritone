@@ -52,6 +52,16 @@
         font-size: 16px;
         color: #6f6f6f;
       }
+      #launch-spotify {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 16px;
+        height: 40px;
+        width: 200px;
+        border: none;
+        border-radius: 20px;
+        background-color: #23CF5F;
+        color: #ffffff;
+      }
       #control-bar {
         background: #272727;
         position: absolute;
@@ -187,59 +197,66 @@
     <div id="seek" onclick="seek(event)" onmouseenter="displayTrackInfo()" onmousemove="getPos(event)" onmouseleave="stopTracking()">
       <div id="seek-pos">0:00</div>
     </div>
-    <div id="loading"><span id="loading-text">ONE MOMENT</span><div id="longer"></div></div>
+    <div id="loading">
+      <span id="loading-text">ONE MOMENT</span><div id="longer">LOADING...</div>
+      <button id="launch-spotify" onclick="launch()">LAUNCH SPOTIFY</button>
+    </div>
   </body>
   <script>
-    var ipc = require('ipc');
+    var ipc = require('electron').ipcRenderer;
     var shuffling = false;
     var repeating = false;
     var length = 0;
     var settings = {};
     setTimeout(function() {
       document.getElementById('longer').innerHTML = 'Please make sure Spotify is running and that you have an internet connection.';
-    }, 10000);
+      document.getElementById('launch-spotify').style.visiblity = 'visible';
+    }, 5000);
     document.getElementById('cover').onload = function() {
       document.getElementById('loading').style.visibility = 'hidden';
     };
-    ipc.on('coverUrl', function(url) {
+    ipc.on('coverUrl', function(event, url) {
       document.getElementById('cover').src = url;
       document.getElementById('track-info-background').style.backgroundImage = 'url(' + url + ')';
     });
-    ipc.on('position', function(percent) {
+    ipc.on('position', function(event, percent) {
       document.getElementById('position').setAttribute('style', 'width: ' + percent + 'vw;');
     });
-    ipc.on('playing', function(playing) {
+    ipc.on('playing', function(event, playing) {
       document.getElementById('play-btn').className = 'fa fa-' + (playing ? 'pause' : 'play');
     });
-    ipc.on('shuffle', function(shuffle) {
+    ipc.on('shuffle', function(event, shuffle) {
       document.getElementById('shuffle-btn').setAttribute('style', 'color: #' + (shuffle ? '23CF5F' : '6f6f6f') + ';');
       shuffling = shuffle;
     });
-    ipc.on('repeat', function(repeat) {
+    ipc.on('repeat', function(event, repeat) {
       document.getElementById('repeat-btn').setAttribute('style', 'color: #' + (repeat ? '23CF5F' : '6f6f6f') + ';');
       repeating = repeat;
     });
-    ipc.on('length', function(data) {
+    ipc.on('length', function(event, data) {
       length = data;
     });
-    ipc.on('running', function(running) {
+    ipc.on('running', function(event, running) {
       if (!running) {
         document.getElementById('loading').style.visibility = 'visible';
         document.getElementById('loading-text').innerHTML = 'NO CONNECTION';
       }
     });
-    ipc.on('track', function(track) {
+    ipc.on('track', function(event, track) {
       document.getElementById('track-title').innerHTML = track;
     });
-    ipc.on('artist', function(artist) {
+    ipc.on('artist', function(event, artist) {
       document.getElementById('track-artist').innerHTML = artist;
     });
-    ipc.on('album', function(album) {
+    ipc.on('album', function(event, album) {
       document.getElementById('track-album').innerHTML = album;
     });
-    ipc.on('settings', function(settings) {
+    ipc.on('settings', function(event, settings) {
       document.getElementById('track-info').style.display = settings.showTrackTitle ? 'initial' : 'none';
     });
+    function launch() {
+      ipc.send('launch');
+    }
     function shuffle() {
       ipc.send('shuffle', !shuffling);
     }
